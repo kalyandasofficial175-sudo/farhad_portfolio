@@ -1,0 +1,105 @@
+{
+  "name": "Farhad Ali",
+  "title": "Political Leader",
+  "party": "Your Party Name",
+  "partyShort": "AIUDF",
+  "constituency": "Your Constituency",
+  "state": "Assam, India",
+  "tagline": "Serving the People with Dedication & Integrity",
+  "bio": "A dedicated public servant committed to the development and welfare of the people. With years of grassroots experience, the mission is to bring meaningful change to every household in the constituency.",
+  "photo": "/uploads/profile_1779634432969.png",
+  "themeColor": "#1a3a6b",
+  "accentColor": "#c8a84b",
+  "stats": [
+    {
+      "label": "Years of Service",
+      "value": "10+"
+    },
+    {
+      "label": "Projects Completed",
+      "value": "50+"
+    },
+    {
+      "label": "Families Helped",
+      "value": "200+"
+    }
+  ],
+  "achievements": [
+    {
+      "icon": "🏗️",
+      "title": "Infrastructure Development",
+      "desc": "Built 20+ roads and bridges across the constituency improving connectivity for thousands."
+    },
+    {
+      "icon": "🎓",
+      "title": "Education Initiative",
+      "desc": "Established 5 new schools and scholarship programs benefiting 2000+ students annually."
+    },
+    {
+      "icon": "🏥",
+      "title": "Healthcare Access",
+      "desc": "Set up 3 primary health centres providing free medical care to rural communities."
+    },
+    {
+      "icon": "💧",
+      "title": "Clean Water Project",
+      "desc": "Ensured piped water supply to 150+ villages previously lacking basic water access."
+    }
+  ],
+  "policies": [
+    {
+      "title": "Economic Growth",
+      "points": [
+        "Create 10,000 local jobs",
+        "Support small businesses with micro-loans",
+        "Develop industrial zones"
+      ]
+    },
+    {
+      "title": "Education",
+      "points": [
+        "Free education up to Class 12",
+        "Digital classrooms in every school",
+        "Skill development centres"
+      ]
+    },
+    {
+      "title": "Agriculture",
+      "points": [
+        "Fair MSP for all crops",
+        "Modern irrigation systems",
+        "Direct farmer subsidies"
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "year": "2010",
+      "event": "Began community activism in local ward"
+    },
+    {
+      "year": "2014",
+      "event": "First elected as Ward Councillor"
+    },
+    {
+      "year": "2018",
+      "event": "Re-elected with record majority"
+    },
+    {
+      "year": "2022",
+      "event": "Elected to State Assembly"
+    },
+    {
+      "year": "2026",
+      "event": "Contesting for re-election"
+    }
+  ],
+  "contact": {
+    "phone": "+91 99999 00000",
+    "email": "contact@farhadali.in",
+    "website": "www.farhadali.in",
+    "facebook": "facebook.com/FarhadAli",
+    "office": "Main Road, Constituency Office, Assam"
+  },
+  "gallery": []
+}
