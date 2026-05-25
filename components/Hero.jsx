@@ -1,4 +1,43 @@
 'use client'
+import { useEffect, useState } from 'react'
+
+/* Split text into individually animated letter spans */
+function AnimLetters({ text, baseDelay = 0, className = '', style = {} }) {
+  return (
+    <span style={{ display: 'inline-block', ...style }}>
+      {text.split('').map((ch, i) => (
+        <span key={i} className={`letter-anim ${className}`} style={{
+          animationDelay: `${baseDelay + i * 0.045}s`,
+        }}>
+          {ch === ' ' ? ' ' : ch}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/* Typewriter hook */
+function useTypewriter(text = '', startDelay = 1200, speed = 38) {
+  const [displayed, setDisplayed] = useState('')
+  const [done, setDone]           = useState(false)
+
+  useEffect(() => {
+    setDisplayed('')
+    setDone(false)
+    let i = 0
+    const start = setTimeout(() => {
+      const interval = setInterval(() => {
+        i++
+        setDisplayed(text.slice(0, i))
+        if (i >= text.length) { clearInterval(interval); setDone(true) }
+      }, speed)
+      return () => clearInterval(interval)
+    }, startDelay)
+    return () => clearTimeout(start)
+  }, [text, startDelay, speed])
+
+  return { displayed, done }
+}
 
 export default function Hero({ data }) {
   const accent = data?.accentColor || '#c8a84b'
@@ -7,6 +46,9 @@ export default function Hero({ data }) {
   const nameParts = (data?.name || 'Politician Name').split(' ')
   const firstName = nameParts[0]
   const lastName  = nameParts.slice(1).join(' ')
+
+  const tagline = data?.tagline || 'Serving the People with Dedication & Integrity'
+  const { displayed: typedTagline, done: taglineDone } = useTypewriter(tagline, 1400, 36)
 
   return (
     <section id="about" className="hero-mesh" style={{
@@ -17,45 +59,34 @@ export default function Hero({ data }) {
       position: 'relative', overflow: 'hidden',
     }}>
 
-      {/* ── Background watermark name ── */}
+      {/* ── Background watermark ── */}
       <div style={{
-        position: 'absolute',
-        right: '-2%', top: '50%',
+        position: 'absolute', right: '-2%', top: '50%',
         transform: 'translateY(-50%)',
-        fontFamily: 'Playfair Display, serif',
-        fontWeight: 900,
+        fontFamily: 'Playfair Display, serif', fontWeight: 900,
         fontSize: 'clamp(100px, 18vw, 260px)',
         color: 'transparent',
-        WebkitTextStroke: `1px ${accent}0d`,
-        lineHeight: 0.9,
-        userSelect: 'none', pointerEvents: 'none', zIndex: 0,
-        letterSpacing: -6,
-        whiteSpace: 'nowrap',
+        WebkitTextStroke: `1px ${accent}0c`,
+        lineHeight: 0.9, userSelect: 'none', pointerEvents: 'none',
+        zIndex: 0, letterSpacing: -6, whiteSpace: 'nowrap',
       }}>
         {firstName}
       </div>
 
-      {/* ── SVG geometric decorations ── */}
-      <svg
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
-        viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice"
-      >
-        {/* Concentric circles top-right */}
+      {/* ── SVG decorations ── */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }}
+        viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
         {[340, 280, 220, 160].map((r, i) => (
-          <circle key={i} cx="1200" cy="180" r={r}
-            fill="none" stroke={accent}
-            strokeWidth="0.5" opacity={0.06 - i * 0.01} />
+          <circle key={i} cx="1200" cy="180" r={r} fill="none"
+            stroke={accent} strokeWidth="0.5" opacity={0.06 - i * 0.01} />
         ))}
-        {/* Bottom-left arc */}
-        <circle cx="0" cy="900" r="250" fill="none" stroke={accent} strokeWidth="0.5" opacity="0.08" />
-        {/* Dot grid */}
+        <circle cx="0" cy="900" r="250" fill="none" stroke={accent} strokeWidth="0.5" opacity="0.07" />
         {Array.from({ length: 7 }, (_, r) =>
           Array.from({ length: 12 }, (_, c) => (
             <circle key={`${r}-${c}`} cx={60 + c * 110} cy={80 + r * 120}
-              r="1.2" fill={accent} opacity="0.07" />
+              r="1.2" fill={accent} opacity="0.06" />
           ))
         )}
-        {/* Diagonal accent lines */}
         <line x1="0" y1="900" x2="450" y2="0" stroke={accent} strokeWidth="0.4" opacity="0.05" />
         <line x1="120" y1="900" x2="570" y2="0" stroke={accent} strokeWidth="0.3" opacity="0.03" />
       </svg>
@@ -63,7 +94,7 @@ export default function Hero({ data }) {
       {/* ── Left accent bar ── */}
       <div style={{
         position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, zIndex: 2,
-        background: `linear-gradient(180deg, transparent 0%, ${accent} 30%, ${accent}99 70%, transparent 100%)`,
+        background: `linear-gradient(180deg, transparent, ${accent}, ${accent}88, transparent)`,
       }} />
 
       {/* ── Main content ── */}
@@ -77,46 +108,65 @@ export default function Hero({ data }) {
         {/* ─────── TEXT SIDE ─────── */}
         <div style={{ flex: '1 1 340px', minWidth: 280 }}>
 
-          {/* Party / State badge */}
-          <div className="animate-fadeUp" style={{
+          {/* ── Badge ── */}
+          <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 10,
-            background: `${accent}10`,
-            border: `1px solid ${accent}35`,
-            padding: '7px 18px',
-            marginBottom: 28,
+            background: `${accent}10`, border: `1px solid ${accent}35`,
+            padding: '7px 18px', marginBottom: 32,
+            animation: 'fadeUp 0.6s ease forwards',
+            animationDelay: '0.1s', opacity: 0,
+            animationStyle: 'badge-pulse 2s ease-in-out 2s infinite',
           }}>
             <div style={{
               width: 7, height: 7, borderRadius: '50%',
-              background: accent,
-              boxShadow: `0 0 8px ${accent}`,
+              background: accent, boxShadow: `0 0 8px ${accent}`,
+              animation: 'badge-pulse 2s ease-in-out infinite',
             }} />
-            <span style={{
-              color: accent, fontSize: 10, fontWeight: 700,
-              letterSpacing: 3, textTransform: 'uppercase',
-            }}>
+            <span style={{ color: accent, fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase' }}>
               {data?.partyShort || 'OFFICIAL'}&nbsp;·&nbsp;{data?.state || 'India'}
             </span>
           </div>
 
-          {/* Name */}
-          <h1 className="animate-fadeUp delay-100 font-display" style={{
-            fontSize: 'clamp(42px, 6.5vw, 88px)',
-            lineHeight: 0.9, marginBottom: 22,
-            letterSpacing: -2,
+          {/* ── Animated name ── */}
+          <h1 className="font-display" style={{
+            fontSize: 'clamp(44px, 6.5vw, 90px)',
+            lineHeight: 0.92, marginBottom: 12,
+            letterSpacing: -2, perspective: '600px',
           }}>
-            <span style={{ display: 'block', color: '#ffffff', fontWeight: 400 }}>
-              {firstName}
+            {/* First name — white, light weight */}
+            <span style={{ display: 'block', color: '#f0f4f8', fontWeight: 300 }}>
+              <AnimLetters text={firstName} baseDelay={0.25} />
             </span>
-            <span className="gradient-text" style={{ display: 'block', fontWeight: 900 }}>
-              {lastName}
+            {/* Last name — gold gradient, bold */}
+            <span style={{ display: 'block' }}>
+              <AnimLetters
+                text={lastName}
+                baseDelay={0.25 + firstName.length * 0.045 + 0.1}
+                className="gradient-text"
+                style={{ fontWeight: 900 }}
+              />
             </span>
           </h1>
 
-          {/* Title row */}
-          <div className="animate-fadeUp delay-200" style={{
-            display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22,
+          {/* ── Animated underline ── */}
+          <div style={{
+            height: 3, width: '100%', maxWidth: 340,
+            background: `linear-gradient(90deg, ${accent}, ${accent}33, transparent)`,
+            marginBottom: 22, transformOrigin: 'left center',
+            transform: 'scaleX(0)',
+            animation: 'lineGrow 0.9s cubic-bezier(0.22,1,0.36,1) forwards',
+            animationDelay: `${0.25 + (firstName.length + lastName.length) * 0.045 + 0.15}s`,
+          }} />
+
+          {/* ── Title row ── */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            marginBottom: 10,
+            clipPath: 'inset(100% 0 0 0)',
+            animation: 'revealUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards',
+            animationDelay: '0.85s',
           }}>
-            <div style={{ width: 36, height: 2, background: accent, flexShrink: 0 }} />
+            <div style={{ width: 32, height: 2, background: accent, flexShrink: 0 }} />
             <span style={{
               color: '#8aaac8', fontSize: 15,
               fontFamily: 'Playfair Display, serif', fontStyle: 'italic',
@@ -126,51 +176,66 @@ export default function Hero({ data }) {
             <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accent}33, transparent)` }} />
           </div>
 
-          {/* Constituency */}
-          <div className="animate-fadeUp delay-200" style={{
+          {/* ── Constituency ── */}
+          <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             fontSize: 11, color: '#4a6a8a',
-            letterSpacing: 2, textTransform: 'uppercase', marginBottom: 28,
+            letterSpacing: 2, textTransform: 'uppercase',
+            marginBottom: 30,
+            clipPath: 'inset(100% 0 0 0)',
+            animation: 'revealUp 0.6s cubic-bezier(0.22,1,0.36,1) forwards',
+            animationDelay: '1.0s',
           }}>
             <span style={{ color: accent }}>◈</span>
             {data?.constituency || 'Constituency'}
           </div>
 
-          {/* Tagline quote */}
-          <div className="animate-fadeUp delay-300" style={{
-            position: 'relative', marginBottom: 24, paddingLeft: 20,
+          {/* ── Typewriter tagline ── */}
+          <div style={{
+            position: 'relative', marginBottom: 26, paddingLeft: 20,
+            opacity: 0,
+            animation: 'fadeIn 0.4s ease forwards',
+            animationDelay: '1.3s',
           }}>
             <div style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0,
-              width: 3,
+              position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
               background: `linear-gradient(180deg, ${accent}, ${accent}44)`,
             }} />
             <p style={{
-              fontSize: 17, lineHeight: 1.7,
+              fontSize: 17, lineHeight: 1.75,
               color: '#dce8f4',
               fontFamily: 'Playfair Display, serif', fontStyle: 'italic',
-              maxWidth: 500,
+              maxWidth: 500, minHeight: '2.2em',
             }}>
-              "{data?.tagline || 'Serving the People with Dedication & Integrity'}"
+              "{typedTagline}
+              {!taglineDone && <span className="cursor" style={{ '--accent': accent }} />}"
+              {taglineDone && '"'}
             </p>
           </div>
 
-          {/* Bio */}
-          <p className="animate-fadeUp delay-400" style={{
-            fontSize: 14, lineHeight: 1.95, color: '#6080a0',
-            maxWidth: 500, marginBottom: 42,
+          {/* ── Bio ── */}
+          <p style={{
+            fontSize: 14, lineHeight: 1.95, color: '#5a7898',
+            maxWidth: 500, marginBottom: 44,
+            clipPath: 'inset(100% 0 0 0)',
+            animation: 'revealUp 0.7s cubic-bezier(0.22,1,0.36,1) forwards',
+            animationDelay: '1.45s',
           }}>
             {data?.bio}
           </p>
 
-          {/* CTA Buttons */}
-          <div className="animate-fadeUp delay-500" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* ── CTA Buttons ── */}
+          <div style={{
+            display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center',
+            opacity: 0,
+            animation: 'fadeUp 0.7s cubic-bezier(0.22,1,0.36,1) forwards',
+            animationDelay: '1.6s',
+          }}>
             <a href="#contact" className="btn-primary" style={{
               padding: '14px 36px',
               background: `linear-gradient(135deg, ${accent}, ${accent}dd)`,
-              color: '#030b18',
-              textDecoration: 'none', fontWeight: 800,
-              fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
+              color: '#030b18', textDecoration: 'none',
+              fontWeight: 800, fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
               display: 'inline-flex', alignItems: 'center', gap: 10,
               boxShadow: `0 6px 28px ${accent}44`,
               transition: 'all 0.3s ease',
@@ -183,12 +248,10 @@ export default function Hero({ data }) {
             <a href="#achievements" style={{
               padding: '13px 34px',
               border: `1.5px solid ${accent}40`,
-              color: '#9ab4cc',
-              textDecoration: 'none', fontWeight: 700,
-              fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
+              color: '#9ab4cc', textDecoration: 'none',
+              fontWeight: 700, fontSize: 11, letterSpacing: 2, textTransform: 'uppercase',
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: `${accent}06`,
-              transition: 'all 0.3s ease',
+              background: `${accent}06`, transition: 'all 0.3s ease',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.borderColor = `${accent}88`
@@ -208,24 +271,20 @@ export default function Hero({ data }) {
         {/* ─────── PHOTO SIDE ─────── */}
         <div className="animate-fadeLeft delay-200" style={{ flexShrink: 0, position: 'relative' }}>
 
-          {/* Outer ambient glow */}
           <div style={{
             position: 'absolute', inset: -40,
             background: `radial-gradient(circle at center, ${accent}14 0%, transparent 65%)`,
             pointerEvents: 'none', zIndex: 0,
           }} />
 
-          {/* Photo container */}
           <div style={{ position: 'relative', width: 310, height: 400, zIndex: 1 }}>
 
-            {/* Shadow frame offset */}
             <div style={{
               position: 'absolute', top: 14, left: 14, right: -14, bottom: -14,
               background: `linear-gradient(135deg, ${theme}55, ${accent}18)`,
               border: `1px solid ${accent}18`,
             }} />
 
-            {/* Corner L brackets */}
             {[
               { top: -8, left: -8, borderTop: true, borderLeft: true },
               { top: -8, right: -8, borderTop: true, borderRight: true },
@@ -233,30 +292,24 @@ export default function Hero({ data }) {
               { bottom: -8, right: -8, borderBottom: true, borderRight: true },
             ].map((pos, i) => (
               <div key={i} style={{
-                position: 'absolute',
-                width: 28, height: 28,
-                ...pos,
-                borderTop: pos.borderTop ? `2px solid ${accent}` : 'none',
-                borderLeft: pos.borderLeft ? `2px solid ${accent}` : 'none',
+                position: 'absolute', width: 28, height: 28, ...pos,
+                borderTop:    pos.borderTop    ? `2px solid ${accent}` : 'none',
+                borderLeft:   pos.borderLeft   ? `2px solid ${accent}` : 'none',
                 borderBottom: pos.borderBottom ? `2px solid ${accent}` : 'none',
-                borderRight: pos.borderRight ? `2px solid ${accent}` : 'none',
+                borderRight:  pos.borderRight  ? `2px solid ${accent}` : 'none',
                 zIndex: 3,
               }} />
             ))}
 
-            {/* Main image */}
             <div style={{
               position: 'relative', width: '100%', height: '100%',
               overflow: 'hidden',
               background: `linear-gradient(170deg, ${theme}66, #030b18)`,
-              border: `1px solid ${accent}25`,
-              zIndex: 1,
+              border: `1px solid ${accent}25`, zIndex: 1,
             }}>
               {data?.photo ? (
-                <img
-                  src={data.photo} alt={data?.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+                <img src={data.photo} alt={data?.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               ) : (
                 <div style={{
                   width: '100%', height: '100%',
@@ -280,7 +333,6 @@ export default function Hero({ data }) {
                 </div>
               )}
 
-              {/* Bottom name tag */}
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
                 background: `linear-gradient(transparent, rgba(3,11,24,0.9))`,
@@ -299,7 +351,6 @@ export default function Hero({ data }) {
             </div>
           </div>
 
-          {/* ── Floating stat chip – top right ── */}
           {data?.stats?.[0] && (
             <div className="animate-float stat-chip-tr" style={{
               background: 'rgba(13,30,56,0.95)',
@@ -318,7 +369,6 @@ export default function Hero({ data }) {
             </div>
           )}
 
-          {/* ── Floating stat chip – bottom left ── */}
           {data?.stats?.[2] && (
             <div className="animate-float stat-chip-bl" style={{
               background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
@@ -344,14 +394,14 @@ export default function Hero({ data }) {
         transform: 'translateX(-50%)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
         zIndex: 2,
+        opacity: 0,
+        animation: 'fadeIn 1s ease forwards',
+        animationDelay: '2s',
       }}>
-        <div style={{ fontSize: 9, color: '#2a4a6a', letterSpacing: 4, textTransform: 'uppercase' }}>
-          Scroll
-        </div>
+        <div style={{ fontSize: 9, color: '#2a4a6a', letterSpacing: 4, textTransform: 'uppercase' }}>Scroll</div>
         <div className="scroll-dot" style={{
           width: 28, height: 28,
-          border: `1px solid ${accent}33`,
-          borderRadius: '50%',
+          border: `1px solid ${accent}33`, borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2.5" opacity="0.7">
